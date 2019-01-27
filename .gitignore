@@ -1,0 +1,7 @@
+# excluindo o log do Geckodriver
+geckodriver.log
+
+# excluindo os arquivos de pycache
+__pycache__
+*.pyc
+
