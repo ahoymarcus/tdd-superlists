@@ -3,17 +3,21 @@
 		Estes tipos de testes aqui com a bibli Selenium permite todo um controle sobre o Navegador, de modo a permitir testar toda a funcionalidade do ponto de vista do User.
 		Também conhecido por Teste de Aceitação, Teste Fim-A-Fim ou Black-box-Test (Caixa-Preta), pois tem como escopo observar o funcionamento da apliação no todo e do ponto de vista externo (ou seja, sem nada saber ou inquirir sobre a parte interna dos processos).
 """
+from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
-import unittest
+#import unittest
 
 
-
+"""
+	Esta é a conf inicial da classe antes da refatoração para o diretório de pacotes python functional_tests/
 class NewVisitorTest(unittest.TestCase):
+"""
+class NewVisitorTest(LiveServerTestCase):	
 	def setUp(self):
 		self.browser = webdriver.Firefox()
-
+	
 	def tearDrow(self):
 		self.browser.quit()
 	
@@ -31,7 +35,8 @@ class NewVisitorTest(unittest.TestCase):
 	"""
 	def test_can_start_a_list_and_retrieve_it_later(self):
 		# Edith ouvir falar de uma nova apicação online interessante para lista de tarefas. Ela decide verificar sua homepage
-		self.browser.get('http://127.0.0.1:8000')
+		#self.browser.get('http://127.0.0.1:8000')
+		self.browser.get(self.live_server_url)
 		
 		# Ela percebe que o título da página e o cabeçalho menscionam listas de tarefas (to-do)
 		self.assertIn('To-Do lists', self.browser.title)
@@ -75,10 +80,12 @@ class NewVisitorTest(unittest.TestCase):
 	# Satisfeita, ela volta a dormir
 
 
-	
+""" 
+	Tirando if name == 'main', que era necessário para inicializar um arq manualmente, pois agora o arq será iniciado pelo executor de testes diretamente.
+	Lembrando que como temos agora um marcador de diretório de pacotes válido com __init__, Django pode lidar com o diretório diretamente.
 if __name__ == '__main__':
 	unittest.main(warnings='ignore')
-	
+"""
 
 
 
