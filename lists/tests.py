@@ -48,7 +48,10 @@ class ItemModelTest(TestCase):
 	def test_redirects_after_POST(self):
 		response = self.client.post('/', data={'item_text': 'A new list item'})
 		self.assertEqual(response.status_code, 302)
-		self.assertEqual(response['location'], '/')
+		
+		# mudando o redirecionamento em função do design multi-user
+		#self.assertEqual(response['location'], '/')
+		self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
 		
 	def test_displays_all_list_items(self):
 		Item.objects.create(text='itemey 1')
@@ -56,7 +59,26 @@ class ItemModelTest(TestCase):
 		
 		response = self.client.get('/')
 		
+		# Veja a diferença de especificidade-generalidade do mét assertIn() e do assertContains() em rel ao trabalho com bytes
 		self.assertIn('itemey 1', response.content.decode())
 		self.assertIn('itemey 2', response.content.decode())
 
+class ListViewTest(TestCase):
+	def test_display_all_items(self):
+		Item.objects.create(text='itemey 1')
+		Item.objects.create(text='itemey 2')
+		
+		response = self.client.get('/lists/the-only-list-in-the-world/')
+		
+		# Veja a diferença de especificidade-generalidade do mét assertIn() e do assertContains() em rel ao trabalho com bytes
+		self.assertContains(response, 'itemey 1')
+		self.assertContains(response, 'itemey 2')
+		
+		
+		
+		
+		
+		
+		
+		
 	

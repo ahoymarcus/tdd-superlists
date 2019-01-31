@@ -49,7 +49,7 @@ class NewVisitorTest(LiveServerTestCase):
 	"""
 		Méts de Testes
 	"""
-	def test_can_start_a_list_for_one_user(self):
+	def test_can_start_a_list_and_retrieve_it_later(self):
 		# Edith ouvir falar de uma nova apicação online interessante para lista de tarefas. Ela decide verificar sua homepage
 		#self.browser.get('http://127.0.0.1:8000')
 		self.browser.get(self.live_server_url)
@@ -96,54 +96,15 @@ class NewVisitorTest(LiveServerTestCase):
 		self.wait_for_row_in_list_table('1: Buy peacock feathers')
 		self.wait_for_row_in_list_table('2: Use peacock feathers to make a fly')
 		
-		# Ela acessa esse URL - sua lista de tarefas continua lá.
-		#self.fail('Finish the test')
-		
-		# Satisfeita, ela volta a dormir
-		
-	def test_multiple_users_can_start_lists_at_different_urls(self):
-		# Edith inicia um nova lista de tarefas
-		self.browser.get(self.live_server_url)
-		inputbox = self.browser.find_element_by_id('id_new_item')
-		inputbox.send_keys('Buy peacock feathers')
-		inputbox.send_keys(Keys.ENTER)
-		self.wait_for_row_in_list_table('1: Buy peacock feathers')
-	
 		# Edith se pergunta se o site lembrará de sua lista. Então ela nota que o site gerou um URL único para ela -- há um pequeno texto explicativo para isso
-		edith_list_url = self.browser.current_url
-		self.assertRegex(edith_list_url, '/lists/.+')
+		self.fail('Finish the test')
 
-		# Agora um novo usuário, Francis, chega ao site
-		## Usamos uma nova sessão de navegador para garantir que nenhuma informação de Edith está vindo de cookiew etc
-		self.browser.quit()
-		self.browser = webdriver.Firefox()
-		
-		# Francis acessa a página inicial. Não há nenhum sinal da lista de Edith.
-		self.browser.get(self.live_server_url)
-		page_text = self.browser.find_element_by_tag_name('body').text
-		self.assertNotIn('Buy peacock feathers', page_text)
-		self.assertNotIn('make a fly', page_text)
-		
-		# Francis inicia uma nova lista inserindo um item novo. Ele é menos interessate que Edith...
-		inputbox = self.browser.find_element_by_id('id_new_item')
-		inputbox.send_keys('Buy milk')
-		inputbox.send_keys(Keys.ENTER)
-		self.wait_for_row_in_list_table('1: Buy milk')
-		
-		# Francis obtém seu próprio URL exclusivo
-		francis_list_url = self.browser.current_url
-		self.assertRegex(francis_list_url, '/lists/.+')
-		self.assertNotEqual(francis_list_url, edith_list_url)
-		
-		# Novamente, não há nenhum sinal da lista de Edith
-		page_text = self.browser.find_element_by_tag_name('body').text
-		self.assertNotIn('Buy peacock feathers', page_text)
-		self.assertIn('Buy milk', page_text)
-		
-		
-		
-		
-		# Stisfeitos, ambos voltam a dormir
+
+	# Ela acessa esse URL - sua lista de tarefas continua lá.
+
+
+	# Satisfeita, ela volta a dormir
+
 
 """ 
 	Tirando if name == 'main', que era necessário para inicializar um arq manualmente, pois agora o arq será iniciado pelo executor de testes diretamente.

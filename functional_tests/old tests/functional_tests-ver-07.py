@@ -2,18 +2,13 @@
 	Teste Funcional:
 		Estes tipos de testes aqui com a bibli Selenium permite todo um controle sobre o Navegador, de modo a permitir testar toda a funcionalidade do ponto de vista do User.
 		Também conhecido por Teste de Aceitação, Teste Fim-A-Fim ou Black-box-Test (Caixa-Preta), pois tem como escopo observar o funcionamento da apliação no todo e do ponto de vista externo (ou seja, sem nada saber ou inquirir sobre a parte interna dos processos).
-		Retirando da qui em diante as esperas explícitas e usando uma lóg de polling/retentiva.
 """
 from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import WebDriverException
-
 import time
 #import unittest
 
-# Inserindo lóg de polling/retentiva para supri a faltas das esperas explícitas (ou implícitas)
-MAX_WAIT = 10
 
 """
 	Esta é a conf inicial da classe antes da refatoração para o diretório de pacotes python functional_tests/
@@ -30,26 +25,15 @@ class NewVisitorTest(LiveServerTestCase):
 		Méts Auxiliares
 	"""
 	# Lembrando que apenas mets que começam com test... são acionados diretamente nos testes
-	
-	# Neste ponto nós substituímos o mét check_for_row_in_list_table() por wait_for_row_in_list_table() para lidar com o problema de espera para o código
-	def wait_for_row_in_list_table(self, row_text):
-		start_time = time.time()
-		while True:
-			try:
-				table = self.browser.find_element_by_id('id_list_table')
-				rows = table.find_elements_by_tag_name('tr')
-				self.assertIn(row_text, [row.text for row in rows])
-				return
-			except (AssertionError, WebDriverException) as e:
-				# Aqui está o counter que permitirá a saída do laço caso a exceção exaurir o limite def MAX_WAIT
-				if time.time() - start_time > MAX_WAIT:
-					raise e
-				time.sleep(0.5)
+	def check_for_row_in_list_table(self, row_text):
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		self.assertIn(row_text, [row.text for row in rows])
 	
 	"""
 		Méts de Testes
 	"""
-	def test_can_start_a_list_for_one_user(self):
+	def test_can_start_a_list_and_retrieve_it_later(self):
 		# Edith ouvir falar de uma nova apicação online interessante para lista de tarefas. Ela decide verificar sua homepage
 		#self.browser.get('http://127.0.0.1:8000')
 		self.browser.get(self.live_server_url)
@@ -73,77 +57,29 @@ class NewVisitorTest(LiveServerTestCase):
 		inputbox.send_keys(Keys.ENTER)
 		# Esta é uma função de "espera explícita", e serve para prover à nova pág tempo de carregamento inicial
 		# Veja ainda que além do problema de determinar o melhor tempo, se um recurso qq não é usado nestes pontos, será dado erro porque haverá problema na sincronia dos processos.
+		time.sleep(5)
 		
-		"""
-			Antigo cód com espera explicita
-		#time.sleep(5)
-		#self.check_for_row_in_list_table('1: Buy peacock feathers')
-		"""
-		self.wait_for_row_in_list_table('1: Buy peacock feathers')
-		
+		self.check_for_row_in_list_table('1: Buy peacock feathers')
+
 		# Ainda continua havendo uma caixa de texto convidando-a a acrescentar outro item. Ela insere "Use peacock feathers to make a fly" (Edith é bastante metódica)
 		inputbox = self.browser.find_element_by_id('id_new_item')
 		inputbox.send_keys('Use peacock feathers to make a fly')
 		inputbox.send_keys(Keys.ENTER)
-		#time.sleep(5)
+		time.sleep(5)
 		
 		# A pág é atualizada novamente e agora mostra os dois itens em sua lista
-		"""
-			Chamadas antigas para o mét que auxiliava com a espera explícita
 		self.check_for_row_in_list_table('1: Buy peacock feathers')
 		self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
-		"""
-		self.wait_for_row_in_list_table('1: Buy peacock feathers')
-		self.wait_for_row_in_list_table('2: Use peacock feathers to make a fly')
 		
-		# Ela acessa esse URL - sua lista de tarefas continua lá.
-		#self.fail('Finish the test')
-		
-		# Satisfeita, ela volta a dormir
-		
-	def test_multiple_users_can_start_lists_at_different_urls(self):
-		# Edith inicia um nova lista de tarefas
-		self.browser.get(self.live_server_url)
-		inputbox = self.browser.find_element_by_id('id_new_item')
-		inputbox.send_keys('Buy peacock feathers')
-		inputbox.send_keys(Keys.ENTER)
-		self.wait_for_row_in_list_table('1: Buy peacock feathers')
-	
 		# Edith se pergunta se o site lembrará de sua lista. Então ela nota que o site gerou um URL único para ela -- há um pequeno texto explicativo para isso
-		edith_list_url = self.browser.current_url
-		self.assertRegex(edith_list_url, '/lists/.+')
+		self.fail('Finish the test')
 
-		# Agora um novo usuário, Francis, chega ao site
-		## Usamos uma nova sessão de navegador para garantir que nenhuma informação de Edith está vindo de cookiew etc
-		self.browser.quit()
-		self.browser = webdriver.Firefox()
-		
-		# Francis acessa a página inicial. Não há nenhum sinal da lista de Edith.
-		self.browser.get(self.live_server_url)
-		page_text = self.browser.find_element_by_tag_name('body').text
-		self.assertNotIn('Buy peacock feathers', page_text)
-		self.assertNotIn('make a fly', page_text)
-		
-		# Francis inicia uma nova lista inserindo um item novo. Ele é menos interessate que Edith...
-		inputbox = self.browser.find_element_by_id('id_new_item')
-		inputbox.send_keys('Buy milk')
-		inputbox.send_keys(Keys.ENTER)
-		self.wait_for_row_in_list_table('1: Buy milk')
-		
-		# Francis obtém seu próprio URL exclusivo
-		francis_list_url = self.browser.current_url
-		self.assertRegex(francis_list_url, '/lists/.+')
-		self.assertNotEqual(francis_list_url, edith_list_url)
-		
-		# Novamente, não há nenhum sinal da lista de Edith
-		page_text = self.browser.find_element_by_tag_name('body').text
-		self.assertNotIn('Buy peacock feathers', page_text)
-		self.assertIn('Buy milk', page_text)
-		
-		
-		
-		
-		# Stisfeitos, ambos voltam a dormir
+
+	# Ela acessa esse URL - sua lista de tarefas continua lá.
+
+
+	# Satisfeita, ela volta a dormir
+
 
 """ 
 	Tirando if name == 'main', que era necessário para inicializar um arq manualmente, pois agora o arq será iniciado pelo executor de testes diretamente.
