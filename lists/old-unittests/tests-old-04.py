@@ -8,6 +8,16 @@ class HomePageTest(TestCase):
 		response = self.client.get('/')
 		self.assertTemplateUsed(response, 'home.html')
 	
+	def test_displays_all_list_items(self):
+		Item.objects.create(text='itemey 1')
+		Item.objects.create(text='itemey 2')
+		
+		response = self.client.get('/')
+		
+		# Veja a diferença de especificidade-generalidade do mét assertIn() e do assertContains() em rel ao trabalho com bytes
+		self.assertIn('itemey 1', response.content.decode())
+		self.assertIn('itemey 2', response.content.decode())
+	
 	def test_can_save_a_POST_request(self):
 		self.client.post('/', data={'item_text': 'A new list item'})
 		
@@ -27,18 +37,6 @@ class HomePageTest(TestCase):
 		self.client.get('/')
 		self.assertEqual(Item.objects.count(), 0)
 		
-	"""
-		Este teste deixou de ser necessário
-	def test_displays_all_list_items(self):
-		Item.objects.create(text='itemey 1')
-		Item.objects.create(text='itemey 2')
-		
-		response = self.client.get('/')
-		
-		# Veja a diferença de especificidade-generalidade do mét assertIn() e do assertContains() em rel ao trabalho com bytes
-		self.assertIn('itemey 1', response.content.decode())
-		self.assertIn('itemey 2', response.content.decode())
-	"""
 		
 class ItemModelTest(TestCase):	
 	def test_saving_and_retrieving_items(self):
@@ -59,10 +57,6 @@ class ItemModelTest(TestCase):
 		self.assertEqual(second_saved_item.text, 'Item the second')	
 
 class ListViewTest(TestCase):
-	def test_uses_list_template(self):
-		response = self.client.get('/lists/the-only-list-in-the-world/')
-		self.assertTemplateUsed(response, 'list.html')
-	
 	def test_display_all_items(self):
 		Item.objects.create(text='itemey 1')
 		Item.objects.create(text='itemey 2')
